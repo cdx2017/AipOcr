@@ -7,7 +7,6 @@ import com.cdx.demo.service.RedisFileService;
 import com.cdx.demo.service.UploadFileService;
 import com.cdx.demo.util.ClientInstance;
 
-import net.sf.json.JSONArray;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -29,16 +28,13 @@ public class PictureToTextController {
     @Autowired
     private DeleteFileService deleteFileService;
 
-    @GetMapping("/login")
-    public String login() {
-        return "login";
+    @GetMapping("/")
+    public String main1() {
+        return "main";
     }
 
     @RequestMapping(value = "/main", method = {RequestMethod.GET, RequestMethod.POST})
-    public String main(@RequestParam(value = "username", required = true) String username) {
-        if ("".equals(username) || username.isEmpty()) {
-            return "login";
-        }
+    public String main() {
         return "main";
     }
 
@@ -58,22 +54,22 @@ public class PictureToTextController {
     }
 
     /**
-     * 上传音频
+     * 上传图片
      *
      * @param file 文件
      */
     @PostMapping(value = "/uploadFile")
-    public String uploadFile(MultipartFile file, @RequestParam(value = "username", required = true) String username) throws Exception {
+    public String uploadFile(MultipartFile file,String PictureKindList, @RequestParam(value = "username", required = true) String username) throws Exception {
         if ("".equals(username) || username.isEmpty()) {
-            return "login";
+            return "main";
         }
         String name = file.getOriginalFilename();
-        /*这里只列出了一些常见格式，理论上音频视频格式都可以*/
+        /*这里只列出了一些常见格式，理论上图片格式都可以*/
         if (name.contains(".jpg") || name.contains(".jpeg") || name.contains(".png") || name.contains(".gif") || name.contains(".bmp")) {
             String[] Name = name.split("\\.");
             int i = Name.length - 1;
-            String newName = username + "_origin." + Name[i];//原音频 例= cdx_origin.jpg
-            String dirPath = "C:\\software\\workspace\\AipOcr\\picture/";
+            String newName = username + PictureKindList + Name[i];//原图片 例= cdx_basicGeneral.jpg
+            String dirPath = "C:\\software\\workspace\\AipOcr\\picture/";//====================================
             if (uploadFileService.uploadFile(file.getInputStream(), newName, dirPath)) {
                 String PictureFilePath = dirPath + newName;//原图片路径
                 redisFileService.saveFilePathToRedis(username + "PictureFilePath", PictureFilePath);/*记录文件位置*/
@@ -87,16 +83,10 @@ public class PictureToTextController {
     @ResponseBody
     public Object PictureToText(String username) {
 
-        HashMap<String, String> options = new HashMap<String, String>();
-        options.put("language_type", "CHN_ENG");
-        options.put("detect_direction", "true");
-        options.put("detect_language", "true");
-        //options.put("probability", "true");
-
         ClientInstance clientInstance = ClientInstance.getInstance();
         String PictureFilePath = redisFileService.getFilePathFromRedis(username + "PictureFilePath");
         System.out.println("start:");
-        ResponseBodyEntity responseBodyEntity = picToTextService.PicToText(clientInstance.getClient(), PictureFilePath, options);
+        ResponseBodyEntity responseBodyEntity = picToTextService.PicToText(clientInstance.getClient(), PictureFilePath);
         System.out.println("complete!");
         deleteFileService.delTempChild(PictureFilePath);
         return responseBodyEntity;
