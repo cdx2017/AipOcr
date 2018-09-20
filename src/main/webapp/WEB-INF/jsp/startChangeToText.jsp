@@ -27,8 +27,9 @@
 </div>
 <table id="table-result" width="80%" align="center" border="1">
     <tr>
+        <th width='20%'>识别类型</th>
         <th width='60%'>识别结果</th>
-        <th width='20%'>语言</th>
+        <th width='10%'>语言</th>
     </tr>
     <tbody id="tbody-result">
     </tbody>
@@ -45,10 +46,42 @@
             data: {"username": "${param.username}"},
             success: function (result) {
                 var str = "";
-                var newresult = result.words_result.replace(/"},{"words":"/g," , ");
+                var word_result = "";
+                var words_result = "";
+                var newresult = result.words_result;
+                var kind = result.kind;
+
+                if (kind == "身份证识别" || kind == "营业执照识别") {
+                    words_result = newresult.replace(/:{"words"/g, "");
+                    var words_result_array = words_result.split(",");
+                    for (var i = 0; i < words_result_array.length; i = i + 5) {
+                        word_result += words_result_array[i] + " , "
+                    }
+                } else if (kind == "驾驶证识别" || kind == "行驶证识别") {
+                    words_result = newresult.replace(/{"words":/g, "");
+                    word_result = words_result.replace(/}/g, " ");
+                } else if (kind == "车牌号识别") {
+                    var words_result_array = newresult.split('","');
+                    word_result += words_result_array[0] + '" , ';
+                    words_result = words_result_array[1];
+                    words_result_array = words_result.split('}],');
+                    word_result += words_result_array[1] + '"}]';
+                } else if (kind == "通用票据识别") {
+                    words_result = newresult.split('"words":');
+                    for (var i = 1; i < words_result.length; i++) {
+                        var words_result_array = words_result[i].split(',"location"');
+                        for (var j = 0; j < words_result_array.length; j = j + 2) {
+                            word_result += words_result_array[j] + " , "
+                        }
+                    }
+                } else {//通用、网络、银行卡、表格
+                    word_result = newresult.replace(/"},{"words":"/g, " , ");
+                }
+
                 str += "<tr>" +
-                "<td align='center' width='20%'>" + newresult + "</td>" +
-                "<td align='center' width='20%'>" + result.language + "</td>" +
+                "<td align = 'center'>" + kind + "</td>" +
+                "<td align = 'center'>" + word_result + "</td>" +
+                "<td align = 'center'>" + result.language + "</td>" +
                 "</tr>";
 
                 tbody.innerHTML = str;

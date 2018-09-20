@@ -12,8 +12,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.HashMap;
-
 /**
  * Created by DX on 2018/9/17.
  */
@@ -59,13 +57,13 @@ public class PictureToTextController {
      * @param file 文件
      */
     @PostMapping(value = "/uploadFile")
-    public String uploadFile(MultipartFile file,String PictureKindList, @RequestParam(value = "username", required = true) String username) throws Exception {
+    public String uploadFile(MultipartFile file, String PictureKindList, @RequestParam(value = "username", required = true) String username) throws Exception {
         if ("".equals(username) || username.isEmpty()) {
             return "main";
         }
         String name = file.getOriginalFilename();
-        /*这里只列出了一些常见格式，理论上图片格式都可以*/
-        if (name.contains(".jpg") || name.contains(".jpeg") || name.contains(".png") || name.contains(".gif") || name.contains(".bmp")) {
+        /*只接受以下图片格式*/
+        if (name.contains(".jpg") || name.contains(".png") || name.contains(".bmp")) {
             String[] Name = name.split("\\.");
             int i = Name.length - 1;
             String newName = username + PictureKindList + Name[i];//原图片 例= cdx_basicGeneral.jpg
