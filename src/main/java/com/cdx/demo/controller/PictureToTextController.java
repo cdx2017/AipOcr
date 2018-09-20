@@ -67,7 +67,7 @@ public class PictureToTextController {
             String[] Name = name.split("\\.");
             int i = Name.length - 1;
             String newName = username + PictureKindList + Name[i];//原图片 例= cdx_basicGeneral.jpg
-            String dirPath = "C:\\software\\workspace\\AipOcr\\picture/";//====================================
+            String dirPath = "/root/web/AipOcr/picture/";//====================================
             if (uploadFileService.uploadFile(file.getInputStream(), newName, dirPath)) {
                 String PictureFilePath = dirPath + newName;//原图片路径
                 redisFileService.saveFilePathToRedis(username + "PictureFilePath", PictureFilePath);/*记录文件位置*/
